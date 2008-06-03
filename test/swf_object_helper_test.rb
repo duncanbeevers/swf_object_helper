@@ -132,9 +132,10 @@ class SWFObjectHelperTest < Test::Unit::TestCase
 
   def test_add_default_attributes_should_raise_when_disallowed_attribute_provided
     attributes = { :key => 'value' }
-    assert attributes.keys.all? do |k|
-      SWFObjectHelper::OPTIONAL_ATTRIBUTES.include? k
+    invalid_attribute_provided = attributes.keys.any? do |k|
+      !SWFObjectHelper::OPTIONAL_ATTRIBUTES.include? k
     end
+    assert invalid_attribute_provided
     assert_raise ArgumentError do
       @view.add_swf_object_default_attributes!(attributes)
     end
@@ -152,8 +153,8 @@ class SWFObjectHelperTest < Test::Unit::TestCase
       !attributes.has_key?(key)
     end
 
-    assert all_expected_keys_found, "Should have provided these keys: #{expected_keys.join(' ')}"
-    assert no_unexpected_keys_found, "Should not have provided these keys: #{unexpected_keys.join(' ')}"
+    assert all_expected_keys_found, "Should have provided these keys: #{expected_keys.join(', ')}"
+    assert no_unexpected_keys_found, "Should not have provided these keys: #{unexpected_keys.join(', ')}"
   end
 
 end

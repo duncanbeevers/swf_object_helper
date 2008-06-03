@@ -48,12 +48,11 @@ module SWFObjectHelper
     :flashvars         => nil,
     :base              => nil
   }
-  OPTIONAL_ATTRIBUTES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.keys
 
   def swf_object options = {}, &block
     apply_swf_object_option_transformations!(options)
-    ensure_required_options!(options)
-    add_default_options!(options)
+    ensure_swf_object_required_options!(options)
+    add_swf_object_default_attributes!(options[:attributes])
 
     js = swf_object_js(url, options)
 
@@ -77,15 +76,19 @@ module SWFObjectHelper
     end
   end
 
-  def add_default_options! options
-    if options.has_key?(:allow_links)
-      allow_links = options[:allow_links] ? 'all' : 'internal'
+  def add_swf_object_default_attributes! attributes
+    return unless attributes
+    unexpected_attributes = attributes.keys - OPTIONAL_ATTRIBUTES
+    raise ArgumentError, "Disallowed attributes provided: #{unexpected_attributes.join(', ')}" unless unexpected_attributes.empty?
+
+    if attributes.has_key?(:allowlinks)
+      allow_links = attributes[:allowlinks] ? 'all' : 'internal'
     else
       allow_links = 'all'
     end
 
-    if options.has_key?(:allowscriptaccess)
-      allow_script_access = options[:allowscriptaccess]
+    if attributes.has_key?(:allowscriptaccess)
+      allow_script_access = attributes[:allowscriptaccess]
     else
       allow_script_access = 'sameDomain'
     end
@@ -118,11 +121,23 @@ module SWFObjectHelper
     end
   end
 
-  def ensure_required_options! options
+  def ensure_swf_object_required_options! options
     missing_arguments = REQUIRED_ARGUMENTS - options.keys
     unless missing_arguments.empty?
       raise ArgumentError, "Missing required SWFObject arguments: #{missing_arguments.join(', ')}"
     end
   end
+
+  # These are for tests
+  OPTIONAL_ATTRIBUTES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.keys
+  OPTIONAL_ATTRIBUTES_WITH_DEFAULT_VALUES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+    v.kind_of?(Array) ? k : nil
+  end.compact
+  OPTIONAL_ATTRIBUTES_WITH_REQUIRED_FORMATS = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+    v.kind_of?(Regexp) ? k : nil
+  end.compact
+  OPTIONAL_ATTRIBUTES_WITH_REQUIRED_VALUES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+    nil == v ? k : nil
+  end.compact
 
 end
