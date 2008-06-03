@@ -72,7 +72,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
       most_required_arguments = SWFObjectHelper::REQUIRED_ARGUMENTS - [ arg ]
       most_required_arguments.each { |supplied_arg| options[supplied_arg] = :supplied }
 
-      assert_raise ArgumentError do
+      assert_raise ArgumentError, "Should raise error when not supplied with required argument #{arg}" do
         @view.ensure_required_options! options
       end
     end
