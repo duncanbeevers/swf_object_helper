@@ -81,6 +81,16 @@ module SWFObjectHelper
     unexpected_attributes = attributes.keys - OPTIONAL_ATTRIBUTES
     raise ArgumentError, "Disallowed attributes provided: #{unexpected_attributes.join(', ')}" unless unexpected_attributes.empty?
 
+    attributes.each do |attribute, value|
+      constraint = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES[attribute]
+      case constraint
+        when Regexp
+          raise ArgumentError,
+            "Attribute #{attribute} does not match format #{constraint.inspect}" unless constraint =~ value
+      end
+    end
+
+
     if attributes.has_key?(:allowlinks)
       allow_links = attributes[:allowlinks] ? 'all' : 'internal'
     else
