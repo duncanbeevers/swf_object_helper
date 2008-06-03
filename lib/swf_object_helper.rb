@@ -84,9 +84,12 @@ module SWFObjectHelper
     attributes.each do |attribute, value|
       constraint = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES[attribute]
       case constraint
+        when Array
+          raise ArgumentError,
+            "Value #{value} for #{attribute} is not included in #{constraint.join(', ')}" unless constraint.include?(value)
         when Regexp
           raise ArgumentError,
-            "Attribute #{attribute} does not match format #{constraint.inspect}" unless constraint =~ value
+            "Attribute #{attribute} => #{value} does not match format #{constraint.inspect}" unless constraint =~ value
       end
     end
 
