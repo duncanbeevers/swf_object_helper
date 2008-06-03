@@ -1,0 +1,25 @@
+Generates JavaScript and optionally alternative content for SWFObject v2.0:
+http://code.google.com/p/swfobject/wiki/documentation
+
+Pass a block with alternative content to also create a div containing it:
+
+  <% swf_object(...) do %>
+    <p>Get Flash, fool!</p>
+  <% end %>
+
+Like other helpers that take blocks, this will concatenate the generated code to
+the ERB output stream directly, so use <% %> instead of <%= %> if a block is given.
+
+Or, pass :alt => true to generate string output including default alternative content:
+
+  <%= swf_object(..., :id => 'alt_content', :alt => true) %>
+  # => <div id='alt_content'>This website requires ...</div><script ...
+
+or pass :alt => "some string" to put that in the alternative content:
+  <%= swf_object(..., :id => 'alt_content', :alt => "no flash") %>
+  # => <div id='alt_content'>no flash</div><script ...
+
+By default, or if you explicitly pass :alt => false, you will have to create the
+alternative content element yourself.
+
+Originally by Henrik N - http://henrik.nyh.se/ http://pastie.textmate.org/private/nu0hpwxmtcx0toi58j4kha
