@@ -112,9 +112,10 @@ class SWFObjectHelperTest < Test::Unit::TestCase
 
   def test_add_default_attributes_should_not_raise_on_good_attribute_format
     attributes = { :bgcolor => '#ffffff' }
-    assert attributes.keys.all? do |key|
+    attributes_require_format = attributes.keys.all? do |key|
       SWFObjectHelper::OPTIONAL_ATTRIBUTES_WITH_REQUIRED_FORMATS.include?(key)
     end
+    assert attributes_require_format
     assert_nothing_raised ArgumentError do
       @view.add_swf_object_default_attributes!(attributes)
     end
