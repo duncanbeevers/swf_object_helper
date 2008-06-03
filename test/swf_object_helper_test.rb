@@ -9,6 +9,12 @@ class SWFObjectHelperTest < Test::Unit::TestCase
     @view = StubView.new
   end
 
+  def test_swf_object_js_should_wrap_embed_in_javascript_tag
+    options = {}
+    assert_equal "<script type=\"text/javascript\">\n//<![CDATA[\nswfobject.embedSWF(\"\",\"\",\"\",\"\",\"\",\"\",{},{},{});\n//]]>\n</script>",
+      @view.swf_object_js(options)
+  end
+
   def test_string_arguments_from_options_should_encode_arguments_as_json_strings
     options = {}
     (SWFObjectHelper::REQUIRED_ARGUMENTS + SWFObjectHelper::OPTIONAL_ARGUMENTS).each_with_index do |arg, i|
@@ -31,7 +37,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
       @view.swf_object_hash_arguments_from_options(options)
   end
 
-  def test_should_url_encode_flashvars_values
+  def test_hash_arguments_from_options_should_url_encode_flashvars_values
     options = { :flashvars => { :loader_url => 'http://cdn.host.com/promo.mp3' } }
     args = @view.swf_object_hash_arguments_from_options(options)
 
@@ -42,7 +48,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   end
 
   def test_swf_object_args
-    assert_equal "\"\", \"\", \"\", \"\", \"\", \"\", {}, {}, {}",
+    assert_equal "\"\",\"\",\"\",\"\",\"\",\"\",{},{},{}",
       @view.swf_object_args({})
   end
 

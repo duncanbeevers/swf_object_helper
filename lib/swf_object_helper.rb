@@ -62,11 +62,11 @@ module SWFObjectHelper
       content = content_tag(:div, content, :id => options[:id])
       concat(content, block.binding)
       concat(js, block.binding)
+    elsif options[:alt]
+      [ content_tag(:div, options[:alt], :id => options[:id]), js ].join
     else
-      (options[:alt] ? content_tag(:div, options[:alt], :id => options[:id]) : '') + 
       js
     end
-
   end
 
   def apply_swf_object_option_transformations! options
@@ -99,7 +99,7 @@ module SWFObjectHelper
   def swf_object_args options
     ( swf_object_string_arguments_from_options(options) +
       swf_object_hash_arguments_from_options(options)
-    ).join(', ')
+    ).join(',')
   end
 
   def swf_object_string_arguments_from_options options
