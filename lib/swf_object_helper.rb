@@ -50,12 +50,8 @@ module SWFObjectHelper
   }
 
   def swf_object options = {}, &block
-    apply_swf_object_option_transformations!(options)
-    ensure_swf_object_required_options!(options)
-    add_swf_object_default_attributes!(options[:attributes])
-
-    js = swf_object_js(options)
-
+    js = javascript_tag(swf_object_js(options))
+    
     if block_given?
       content = capture(&block)
       content = content_tag(:div, content, :id => options[:id])
@@ -64,7 +60,7 @@ module SWFObjectHelper
     elsif options[:alt]
       [ content_tag(:div, options[:alt], :id => options[:id]), js ].join
     else
-      js
+      [ tag(:div, :id => options[:id]), js ].join
     end
   end
 
@@ -116,7 +112,11 @@ module SWFObjectHelper
 
   # Generates just the javascript necessary to create a swfobject embed
   def swf_object_js options
-    javascript_tag("swfobject.embedSWF(#{swf_object_args(options)});")
+    apply_swf_object_option_transformations!(options)
+    ensure_swf_object_required_options!(options)
+    add_swf_object_default_attributes!(options[:attributes])
+    
+    "swfobject.embedSWF(#{swf_object_args(options)});"
   end
 
   def swf_object_args options
@@ -127,7 +127,7 @@ module SWFObjectHelper
 
   def swf_object_string_arguments_from_options options
     (REQUIRED_ARGUMENTS + OPTIONAL_ARGUMENTS).map do |arg|
-      options[arg].to_s.to_json
+      options[arg] ? options[arg].to_s.to_json : 'null'
     end
   end
 
