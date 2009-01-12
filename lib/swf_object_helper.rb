@@ -24,7 +24,7 @@
 #
 # Originally by Henrik N - http://henrik.nyh.se/ http://pastie.textmate.org/private/nu0hpwxmtcx0toi58j4kha
 module SWFObjectHelper
-  REQUIRED_ARGUMENTS = [ :url, :id, :width, :height, :version ]
+  REQUIRED_ARGUMENTS = [ :id, :width, :height, :version ]
   OPTIONAL_ARGUMENTS = [ :express_install_url ]
   HASH_ARGUMENTS     = [ :flashvars, :params, :attributes ]
 
@@ -49,7 +49,7 @@ module SWFObjectHelper
     :base              => nil
   }
 
-  def swf_object options = {}, &block
+  def swf_object url, options = {}, &block
     apply_swf_object_option_transformations!(options)
     ensure_swf_object_required_options!(options)
     add_swf_object_default_attributes!(options[:attributes])
