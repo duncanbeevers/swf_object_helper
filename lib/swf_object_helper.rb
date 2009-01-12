@@ -93,7 +93,10 @@ module SWFObjectHelper
           end
         when Regexp
           raise ArgumentError,
-            "Attribute #{attribute} => #{value} does not match format #{constraint.inspect}" unless constraint =~ value
+            "Value #{value} for #{attribute} does not match format #{constraint.inspect}" unless constraint =~ value
+        when NilClass
+          raise ArgumentError,
+            "Value #{value}:#{value.class} for #{attribute} is invalid, must be a String" unless value.kind_of?(String)
       end
     end
 
