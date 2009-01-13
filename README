@@ -1,7 +1,36 @@
-Generates JavaScript and optionally alternative content for SWFObject v2.0:
+Generates JavaScript and optionally alternative content for SWFObject v2.1:
 http://code.google.com/p/swfobject/wiki/documentation
+http://code.google.com/p/swfobject/wiki/release_notes
 
-Pass a block with alternative content to also create a div containing it:
+Use the swf_object helper to generate all necessary markup and javascript for
+flash player content.
+
+Required attributes for swf_object are:
+  :url        # The url of the swf to be embedded
+  :width      # The width in pixels of the swf to be embedded
+  :height     # The height in pixels of the swf to be embedded
+  :version    # The minimum flash version necessary to display the provided content
+
+A number of optional attributes are also supported.  Adobe-supported attributes are
+listed in SWFObjectHelper::OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES
+
+Custom parameters can be supplied using the :params attribute, and variables
+can be passed directly to the swf itself using the :flashvars attribute.
+Attributes supplied via :flashvars are automatically url-encoded.
+
+Alternatively, flashvars can be supplied within :params like so
+:params => {
+  :flashvars => "username=duncanbeevers&connect=true"
+}
+Flashvars supplied this way must be manually url-encoded.
+
+Calling swf_object automatically creates an empty containing div for the generated
+swf.
+
+  <%= swf_object(...) %>
+
+Provide a block to provide alternate content for when the flash player is not
+available:
 
   <% swf_object(...) do %>
     <p>Get Flash, fool!</p>
@@ -19,7 +48,10 @@ or pass :alt => "some string" to put that in the alternative content:
   <%= swf_object(..., :id => 'alt_content', :alt => "no flash") %>
   # => <div id='alt_content'>no flash</div><script ...
 
-By default, or if you explicitly pass :alt => false, you will have to create the
-alternative content element yourself.
+If you already have a containing element in your markup, you can generate just the
+javascript necessary to embed the swf by using swf_object_js.
+Note that if you use this method, you will need to wrap the js in a <script> block
+
+  <%= javascript_tag(swf_object_js(...)) %>
 
 Originally by Henrik N - http://henrik.nyh.se/ http://pastie.textmate.org/private/nu0hpwxmtcx0toi58j4kha
