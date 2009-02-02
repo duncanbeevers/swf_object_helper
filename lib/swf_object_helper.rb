@@ -30,23 +30,23 @@ module SWFObjectHelper
 
   # Optional attributes specified http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701
   # First value in possible values array is default
-  OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES = {
-    :play              => [ 'true', 'false' ],
-    :loop              => [ 'true', 'false' ],
-    :menu              => [ 'true', 'false' ],
-    :quality           => [ 'autohigh', 'low', 'autolow', 'medium', 'high', 'best' ],
-    :scale             => [ 'default', 'noorder', 'exactfit' ],
-    :salign            => [ 'tl', 'tr', 'bl', 'br', 'l', 'r', 't', 'b' ],
-    :wmode             => [ 'window', 'opaque', 'transparent' ],
-    :bgcolor           => /#[0-9a-fA-F]{6,6}/, # Must match #RRGGBB hexadecimal color
-    :swliveconnect     => [ 'false', 'true' ],
-    :devicefont        => [ 'true', 'false' ],
-    :seamlesstabbing   => [ 'true', 'false' ],
-    :allowfullscreen   => [ 'true', 'false' ],
-    :allowlinks        => [ 'all', 'internal' ],
-    :allowscriptaccess => [ 'sameDomain', 'never', 'always' ],
-    :flashvars         => nil,
-    :base              => nil
+  OPTIONAL_PARAMS_POSSIBLE_VALUES = {
+    :play                => [ 'true', 'false' ],
+    :loop                => [ 'true', 'false' ],
+    :menu                => [ 'true', 'false' ],
+    :quality             => [ 'autohigh', 'low', 'autolow', 'medium', 'high', 'best' ],
+    :scale               => [ 'default', 'noorder', 'exactfit' ],
+    :salign              => [ 'tl', 'tr', 'bl', 'br', 'l', 'r', 't', 'b' ],
+    :wmode               => [ 'window', 'opaque', 'transparent' ],
+    :bgcolor             => /#[0-9a-fA-F]{6,6}/, # Must match #RRGGBB hexadecimal color
+    :sw_live_connect     => [ 'false', 'true' ],
+    :device_font         => [ 'true', 'false' ],
+    :seamless_tabbing    => [ 'true', 'false' ],
+    :allow_fullscreen    => [ 'true', 'false' ],
+    :allow_links         => [ 'all', 'internal' ],
+    :allow_script_access => [ 'sameDomain', 'always', 'never' ],
+    :flashvars           => nil,
+    :base                => nil
   }
 
   def swf_object options = {}, &block
@@ -60,74 +60,77 @@ module SWFObjectHelper
     elsif options[:alt]
       [ content_tag(:div, options[:alt], :id => options[:id]), js ].join
     else
-      [ tag(:div, :id => options[:id]), js ].join
+      [ content_tag(:div, '', :id => options[:id]), js ].join
     end
   end
 
   def apply_swf_object_option_transformations! options
     options[:width], options[:height] = options[:size].split('x') if options[:size]
-
+    
     if true == options[:alt]
       options[:alt] = %{This website requires #{link_to('Flash player', 'http://www.adobe.com/shockwave/download/download.cgi?P1_Prod_Version=ShockwaveFlash')} #{options[:version]} or higher.}
     end
   end
-
-  def add_swf_object_default_attributes! attributes
-    return unless attributes
-    unexpected_attributes = attributes.keys - OPTIONAL_ATTRIBUTES
-    raise ArgumentError, "Disallowed attributes provided: #{unexpected_attributes.join(', ')}" unless unexpected_attributes.empty?
-
-    attributes.each do |attribute, value|
-      constraint = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES[attribute]
+  
+  def add_swf_object_default_params! params
+    return unless params
+    unexpected_params = params.keys - OPTIONAL_PARAMS
+    raise ArgumentError, "Disallowed params provided: #{unexpected_params.join(', ')}" unless unexpected_params.empty?
+    
+    # params[:allow_links] = 'internal' if false == params[:allow_links]
+    # params[:allow_script_access] = 'never' if false == params[:allow_script_access]
+    
+    params.each do |param, value|
+      constraint = OPTIONAL_PARAMS_POSSIBLE_VALUES[param]
       case constraint
         when Array
           if true == value
-            attributes[attribute] = constraint.first
+            params[param] = constraint.first
+          elsif false == value
+            params[param] = constraint.last
           else
             raise ArgumentError,
-              "Value #{value} for #{attribute} is not included in #{constraint.join(', ')}" unless constraint.include?(value)
+              "Value #{value} for #{param} is not included in #{constraint.join(', ')}" unless constraint.include?(value)
           end
         when Regexp
           raise ArgumentError,
-            "Value #{value} for #{attribute} does not match format #{constraint.inspect}" unless constraint =~ value
+            "Value #{value} for #{param} does not match format #{constraint.inspect}" unless constraint =~ value
         when NilClass
           raise ArgumentError,
-            "Value #{value}:#{value.class} for #{attribute} is invalid, must be a String" unless value.kind_of?(String)
+            "Value #{value}:#{value.class} for #{param} is invalid, must be a String" unless value.kind_of?(String)
       end
     end
-
-
-    if attributes.has_key?(:allowlinks)
-      allow_links = attributes[:allowlinks] ? 'all' : 'internal'
-    else
-      allow_links = 'all'
-    end
-
-    if attributes.has_key?(:allowscriptaccess)
-      allow_script_access = attributes[:allowscriptaccess]
-    else
-      allow_script_access = 'sameDomain'
-    end
   end
-
+  
   # Generates just the javascript necessary to create a swfobject embed
   def swf_object_js options
+    "swfobject.embedSWF(#{swf_object_encoded_args(options).join(',')});"
+  end
+  
+  def swf_object_encoded_args options
+    swf_object_args(options).map do |arg|
+      case arg
+      when Hash
+        Hash[*arg.map { |a, v| [ a.to_s.gsub('_', ''), v ] }.flatten].to_json
+      else
+        arg.to_json
+      end
+    end
+    # (&:to_json)
+  end
+  
+  def swf_object_args options
     apply_swf_object_option_transformations!(options)
     ensure_swf_object_required_options!(options)
-    add_swf_object_default_attributes!(options[:attributes])
+    add_swf_object_default_params!(options[:params])
     
-    "swfobject.embedSWF(#{swf_object_args(options)});"
-  end
-
-  def swf_object_args options
-    ( swf_object_string_arguments_from_options(options) +
-      swf_object_hash_arguments_from_options(options)
-    ).join(',')
+    swf_object_string_arguments_from_options(options) +
+    swf_object_hash_arguments_from_options(options)
   end
 
   def swf_object_string_arguments_from_options options
     (REQUIRED_ARGUMENTS + OPTIONAL_ARGUMENTS).map do |arg|
-      options[arg] ? options[arg].to_s.to_json : 'null'
+      options[arg] ? options[arg].to_s : nil
     end
   end
 
@@ -137,7 +140,7 @@ module SWFObjectHelper
       if :flashvars == arg  # swfobject expects you to url encode flashvars values
         hash = Hash[*hash.inject([]) {|m,(k,v)| m << k << url_encode(v) }]
       end
-      hash.to_json
+      hash
     end
   end
 
@@ -149,14 +152,14 @@ module SWFObjectHelper
   end
 
   # These are for tests
-  OPTIONAL_ATTRIBUTES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.keys
-  OPTIONAL_ATTRIBUTES_WITH_DEFAULT_VALUES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+  OPTIONAL_PARAMS = OPTIONAL_PARAMS_POSSIBLE_VALUES.keys
+  OPTIONAL_PARAMS_WITH_DEFAULT_VALUES = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
     v.kind_of?(Array) ? k : nil
   end.compact
-  OPTIONAL_ATTRIBUTES_WITH_REQUIRED_FORMATS = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+  OPTIONAL_PARAMS_WITH_REQUIRED_FORMATS = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
     v.kind_of?(Regexp) ? k : nil
   end.compact
-  OPTIONAL_ATTRIBUTES_WITH_REQUIRED_VALUES = OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES.map do |k, v|
+  OPTIONAL_PARAMS_WITH_REQUIRED_VALUES = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
     nil == v ? k : nil
   end.compact
 

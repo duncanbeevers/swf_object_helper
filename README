@@ -11,8 +11,8 @@ Required attributes for swf_object are:
   :height     # The height in pixels of the swf to be embedded
   :version    # The minimum flash version necessary to display the provided content
 
-A number of optional attributes are also supported.  Adobe-supported attributes are
-listed in SWFObjectHelper::OPTIONAL_ATTRIBUTES_POSSIBLE_VALUES
+A number of optional params are also supported.  Adobe-supported params are
+listed in SWFObjectHelper::OPTIONAL_PARAMS_POSSIBLE_VALUES
 
 Custom parameters can be supplied using the :params attribute, and variables
 can be passed directly to the swf itself using the :flashvars attribute.
