@@ -38,7 +38,7 @@ module SWFObjectHelper
     :scale               => [ 'default', 'noorder', 'exactfit' ],
     :salign              => [ 'tl', 'tr', 'bl', 'br', 'l', 'r', 't', 'b' ],
     :wmode               => [ 'window', 'opaque', 'transparent' ],
-    :bgcolor             => /#[0-9a-fA-F]{6,6}/, # Must match #RRGGBB hexadecimal color
+    :bg_color             => /#[0-9a-fA-F]{6,6}/, # Must match #RRGGBB hexadecimal color
     :sw_live_connect     => [ 'false', 'true' ],
     :device_font         => [ 'true', 'false' ],
     :seamless_tabbing    => [ 'true', 'false' ],
