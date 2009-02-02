@@ -108,15 +108,10 @@ module SWFObjectHelper
   end
   
   def swf_object_encoded_args options
-    swf_object_args(options).map do |arg|
-      case arg
-      when Hash
-        Hash[*arg.map { |a, v| [ a.to_s.gsub('_', ''), v ] }.flatten].to_json
-      else
-        arg.to_json
-      end
-    end
-    # (&:to_json)
+    object_args = swf_object_args(options)
+    params = object_args[-2]
+    object_args[-2] = Hash[*params.map { |a, v| [ a.to_s.gsub('_', ''), v ] }.flatten]
+    object_args.map(&:to_json)
   end
   
   def swf_object_args options
@@ -127,30 +122,47 @@ module SWFObjectHelper
     swf_object_string_arguments_from_options(options) +
     swf_object_hash_arguments_from_options(options)
   end
-
+  
   def swf_object_string_arguments_from_options options
     (REQUIRED_ARGUMENTS + OPTIONAL_ARGUMENTS).map do |arg|
       options[arg] ? options[arg].to_s : nil
     end
   end
-
+  
   def swf_object_hash_arguments_from_options options
     HASH_ARGUMENTS.map do |arg|
       hash = options[arg] || {}
       if :flashvars == arg  # swfobject expects you to url encode flashvars values
-        hash = Hash[*hash.inject([]) {|m,(k,v)| m << k << url_encode(v) }]
+        hash = Hash[*hash.inject([]) {|m,(k,v)| m << k << swf_object_url_encode(v) }]
       end
       hash
     end
   end
-
+  
+  def swf_object_url_encode v
+    case v
+      when JSParam then v
+      else url_encode(v)
+    end
+  end
+  
   def ensure_swf_object_required_options! options
     missing_arguments = REQUIRED_ARGUMENTS - options.keys
     unless missing_arguments.empty?
       raise ArgumentError, "Missing required SWFObject arguments: #{missing_arguments.join(', ')}"
     end
   end
-
+  
+  class JSParam
+    def initialize text
+      @text = text
+    end
+    
+    def to_json
+      @text
+    end
+  end
+  
   # These are for tests
   OPTIONAL_PARAMS = OPTIONAL_PARAMS_POSSIBLE_VALUES.keys
   OPTIONAL_PARAMS_WITH_DEFAULT_VALUES = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|

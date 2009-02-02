@@ -196,4 +196,11 @@ class SWFObjectHelperTest < Test::Unit::TestCase
     end
   end
   
+  def test_should_not_json_encode_js_params
+    options = { :url => 'url', :id => 'id', :width => 100, :height => 100, :version => 1,
+      :flashvars => { :channel_id => SWFObjectHelper::JSParam.new('channel_id') } }
+    flashvars = @view.swf_object_encoded_args(options)[-3]
+    assert_equal "{\"channel_id\":channel_id}", flashvars
+  end
+  
 end

@@ -7,11 +7,12 @@ flash player content.
 
 Required attributes for swf_object are:
   :url        # The url of the swf to be embedded
+  :id         # The id of the dom node which the swf will replace
   :width      # The width in pixels of the swf to be embedded
   :height     # The height in pixels of the swf to be embedded
   :version    # The minimum flash version necessary to display the provided content
 
-A number of optional params are also supported.  Adobe-supported params are
+A number of Adobe-specific params are supported.  Supported params are
 listed in SWFObjectHelper::OPTIONAL_PARAMS_POSSIBLE_VALUES
 
 Custom parameters can be supplied using the :params attribute, and variables
@@ -23,6 +24,20 @@ Alternatively, flashvars can be supplied within :params like so
   :flashvars => "username=duncanbeevers&connect=true"
 }
 Flashvars supplied this way must be manually url-encoded.
+
+If you need to supply javascript as parameter to SWFObject, you can avoid the
+JSON escaping using the JSParam object.  For example, say you have specified a timestamp
+to be passed along with the flashvars, your embed call may look something
+like this:
+
+var channel_id = new Date().getTime();
+<%= swf_object(
+  :url => 'http://example.com/demo.swf',
+  :id => 'dom_id', :width => 100, :height => 100, :version => 9,
+  :flashvars => {
+    :channel_id => SWFObjectHelper::JSParam.new('channel_id')
+  }
+) %>
 
 Calling swf_object automatically creates an empty containing div for the generated
 swf.
