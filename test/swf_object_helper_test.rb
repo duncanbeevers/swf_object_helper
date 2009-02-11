@@ -4,8 +4,8 @@ class StubView < ActionView::Base
   include SWFObjectHelper
 end
 
-OPTIONAL_PARAMS_SET_TO_DEFAULT_VALUES = Hash[*SWFObjectHelper::OPTIONAL_PARAMS_WITH_DEFAULT_VALUES.map do |k|
-  [ k, SWFObjectHelper::OPTIONAL_PARAMS_POSSIBLE_VALUES[k].first ]
+PARAMS_SET_TO_DEFAULT_VALUES = Hash[*SWFObjectHelper::PARAMS_WITH_DEFAULT_VALUES.map do |k|
+  [ k, SWFObjectHelper::PARAMS_POSSIBLE_VALUES[k].first ]
 end.flatten]
 
 class SWFObjectHelperTest < Test::Unit::TestCase
@@ -82,13 +82,13 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   end
   
   def test_add_default_params_should_supply_default_value_if_provided_true
-    attributes = Hash[*SWFObjectHelper::OPTIONAL_PARAMS_WITH_DEFAULT_VALUES.map do |k|
+    attributes = Hash[*SWFObjectHelper::PARAMS_WITH_DEFAULT_VALUES.map do |k|
       [ k, true ]
     end.flatten]
     
     @view.add_swf_object_default_params!(attributes)
     
-    assert_equal OPTIONAL_PARAMS_SET_TO_DEFAULT_VALUES, attributes
+    assert_equal PARAMS_SET_TO_DEFAULT_VALUES, attributes
   end
   
   def test_add_default_attributes_should_raise_on_bad_attribute_format
@@ -101,7 +101,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   def test_add_default_attributes_should_not_raise_on_good_attribute_format
     attributes = { :bg_color => '#ffffff' }
     attributes_require_format = attributes.keys.all? do |key|
-      SWFObjectHelper::OPTIONAL_PARAMS_WITH_REQUIRED_FORMATS.include?(key)
+      SWFObjectHelper::PARAMS_WITH_REQUIRED_FORMATS.include?(key)
     end
     assert attributes_require_format
     assert_nothing_raised ArgumentError do
@@ -110,7 +110,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   end
   
   def test_add_default_attributes_should_raise_when_non_string_argument_provided_for_attribute_with_no_default
-    attributes = Hash[*SWFObjectHelper::OPTIONAL_PARAMS_WITH_REQUIRED_VALUES.map do |k|
+    attributes = Hash[*SWFObjectHelper::PARAMS_WITH_REQUIRED_VALUES.map do |k|
       [ k, true ]
     end.flatten]
     assert_raise ArgumentError do
@@ -121,7 +121,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   def test_add_default_attributes_should_raise_when_disallowed_attribute_provided
     attributes = { :key => 'value' }
     invalid_attribute_provided = attributes.keys.any? do |k|
-      !SWFObjectHelper::OPTIONAL_PARAMS.include? k
+      !SWFObjectHelper::PARAMS.include? k
     end
     assert invalid_attribute_provided
     assert_raise ArgumentError do
@@ -132,7 +132,7 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   def test_add_default_attributes_should_not_add_unprovided_keys
     attributes = { :base => 'base value' }
     expected_keys = attributes.keys
-    unexpected_keys = SWFObjectHelper::OPTIONAL_PARAMS - attributes.keys
+    unexpected_keys = SWFObjectHelper::PARAMS - attributes.keys
     @view.add_swf_object_default_params!(attributes)
     all_expected_keys_found = expected_keys.all? do |key|
       attributes.has_key?(key)
@@ -187,10 +187,10 @@ class SWFObjectHelperTest < Test::Unit::TestCase
   
   def test_emitted_attribute_names_should_remove_underscore
     options = { :url => 'url', :id => 'id', :width => 100, :height => 200, :version => 1,
-      :params => OPTIONAL_PARAMS_SET_TO_DEFAULT_VALUES }
+      :params => PARAMS_SET_TO_DEFAULT_VALUES }
     params = JSON.parse(@view.swf_object_encoded_args(options)[-2])
     
-    OPTIONAL_PARAMS_SET_TO_DEFAULT_VALUES.each do |param, v|
+    PARAMS_SET_TO_DEFAULT_VALUES.each do |param, v|
       encoded_param = param.to_s.gsub('_', '')
       assert params.has_key?(encoded_param), "Expected params to have encoded #{param} as #{encoded_param}"
     end

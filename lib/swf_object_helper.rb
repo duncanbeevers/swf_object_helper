@@ -30,7 +30,7 @@ module SWFObjectHelper
 
   # Optional attributes specified http://kb.adobe.com/selfservice/viewContent.do?externalId=tn_12701
   # First value in possible values array is default
-  OPTIONAL_PARAMS_POSSIBLE_VALUES = {
+  PARAMS_POSSIBLE_VALUES = {
     :play                => [ 'true', 'false' ],
     :loop                => [ 'true', 'false' ],
     :menu                => [ 'true', 'false' ],
@@ -74,14 +74,14 @@ module SWFObjectHelper
   
   def add_swf_object_default_params! params
     return unless params
-    unexpected_params = params.keys - OPTIONAL_PARAMS
+    unexpected_params = params.keys - PARAMS
     raise ArgumentError, "Disallowed params provided: #{unexpected_params.join(', ')}" unless unexpected_params.empty?
     
     # params[:allow_links] = 'internal' if false == params[:allow_links]
     # params[:allow_script_access] = 'never' if false == params[:allow_script_access]
     
     params.each do |param, value|
-      constraint = OPTIONAL_PARAMS_POSSIBLE_VALUES[param]
+      constraint = PARAMS_POSSIBLE_VALUES[param]
       case constraint
         when Array
           if true == value
@@ -164,14 +164,14 @@ module SWFObjectHelper
   end
   
   # These are for tests
-  OPTIONAL_PARAMS = OPTIONAL_PARAMS_POSSIBLE_VALUES.keys
-  OPTIONAL_PARAMS_WITH_DEFAULT_VALUES = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
+  PARAMS = PARAMS_POSSIBLE_VALUES.keys
+  PARAMS_WITH_DEFAULT_VALUES = PARAMS_POSSIBLE_VALUES.map do |k, v|
     v.kind_of?(Array) ? k : nil
   end.compact
-  OPTIONAL_PARAMS_WITH_REQUIRED_FORMATS = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
+  PARAMS_WITH_REQUIRED_FORMATS = PARAMS_POSSIBLE_VALUES.map do |k, v|
     v.kind_of?(Regexp) ? k : nil
   end.compact
-  OPTIONAL_PARAMS_WITH_REQUIRED_VALUES = OPTIONAL_PARAMS_POSSIBLE_VALUES.map do |k, v|
+  PARAMS_WITH_REQUIRED_VALUES = PARAMS_POSSIBLE_VALUES.map do |k, v|
     nil == v ? k : nil
   end.compact
 
